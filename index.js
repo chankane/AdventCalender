@@ -1,10 +1,12 @@
-const ARGS = [1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1];
+//const ARGS = [1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1];
+const ARGS = [0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0];
 const SIZE = 3;
 
 var size;
 var field;
 var isSolved = false;
-var ans = ['c', 'b'];
+var ans = ['No answer...'];
+var max = 0;
 
 function initField() {
   field = [];
@@ -28,26 +30,35 @@ function initField() {
 }
 
 function solve(depth, pos, dir) {
-  if (isSolved) {
-    return;
+  if (max < depth) {
+    max = depth;
   }
 
   if (depth >= size * size * size) {
-   showAns();
-   isSolved = true;
-  }
-
-  if (field[pos.z][pos.y][pos.z]) {
+    isSolved = true;
+    ans = [];
     return;
   }
+
+  if (field[pos.z][pos.y][pos.x]) {
+    return;
+  }
+
+  field[pos.z][pos.y][pos.z] = 1;
 
   if (args[depth]) {
     for (e of dir.generateDirOfRightAngle()) {
       solve(depth + 1, Verctor3.add(pos, e), e);
+      if (isSolved) {
+        ans.unshift(dir.toString());
+        return;
+      }
     }
   } else {
     solve(depth + 1, Verctor3.add(pos, dir), dir);
   }
+
+  field[pos.z][pos.y][pos.z] = 0;
 }
 
 function main() {
@@ -57,11 +68,13 @@ function main() {
   initField();
   console.log(field);
   solve(0, new Verctor3(0, 0, 0), new Verctor3(1, 0, 0));
-  document.getElementById('answer').innerText = document.getElementById('args').value;
+  console.log(max);
+  console.log(ans);
+  showAns();
 }
 
 function showAns() {
-  document.getElementById('answer').innerText = ans.join(',');
+  document.getElementById('answer').innerText = ans.join('\n');
 }
 
 class Verctor3 {
@@ -76,22 +89,37 @@ class Verctor3 {
   }
 
   generateDirOfRightAngle() {
-    const inv = new Verctor3(this.x, this.y, this.z);
-    let ret= [];
-    for (let z = -1; z <= 1; z++) {
-      for (let y = -1; y <= 1; y++) {
-        for (let x = -1; x <= 1; x++) {
-          let tmp = new Verctor3(x, y, z);
-          if (!tmp.equals(this) && !tmp.equals(inv)) {
-            ret.push(tmp);
-          }
-        }
-      }
-    }
-    return ret;
+    const inv = new Verctor3(-this.x, -this.y, -this.z);
+
+    let all = [
+      new Verctor3(1, 0, 0),
+      new Verctor3(-1, 0, 0),
+      new Verctor3(0, 1, 0),
+      new Verctor3(0, -1, 0),
+      new Verctor3(0, 0, 1),
+      new Verctor3(0, 0, -1),
+    ];
+
+    return all.filter(e => !e.equals(this) && !e.equals(inv));
   }
 
   equals(v) {
     return this.x == v.x && this.y == v.y && this.z == v.z;
+  }
+
+  toString() {
+    if (this.equals(new Verctor3(1, 0, 0))) {
+      return 'Right';
+    } else if (this.equals(new Verctor3(-1, 0, 0))) {
+      return 'Left';
+    } else if (this.equals(new Verctor3(0, 1, 0))) {
+      return 'Up';
+    } else if (this.equals(new Verctor3(0, -1, 0))) {
+      return 'Down';
+    } else if (this.equals(new Verctor3(0, 0, 1))) {
+      return 'Back';
+    } else if (this.equals(new Verctor3(0, 0, -1))) {
+      return 'Forward';
+    }
   }
 }
