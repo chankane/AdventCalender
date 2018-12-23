@@ -1,4 +1,5 @@
 require "matrix"
+require "benchmark"
 
 $size
 $args
@@ -92,10 +93,12 @@ $hasSolved = false
 $ans = []
 $field = cre_field
 
-solve(0, Vector[0, 0, 0], Vector[1, 0, 0])
+rslt = Benchmark.realtime do
+  solve(0, Vector[0, 0, 0], Vector[1, 0, 0])
+end
 
 if $hasSolved
-  puts $ans.join("\n")
+  puts $ans.join("\n"), "\nTotal time: " + (rslt / 1000).to_s + " ms"
 else
   puts "No answer..."
 end
